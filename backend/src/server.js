@@ -13,8 +13,8 @@ mongoose.connect('mongodb://localhost/omnistack8', {
   useCreateIndex: true
 });
 
-server.use(express.json());
 server.use(cors());
+server.use(express.json());
 server.use(routes);
 
 server.get('/', (req, res) => {
