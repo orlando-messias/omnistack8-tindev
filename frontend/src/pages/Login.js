@@ -14,7 +14,6 @@ function Login({ history }) {
     });
 
     const { _id } = response.data;
-    console.log(response.data);
     history.push(`/dev/${_id}`);
   }
 

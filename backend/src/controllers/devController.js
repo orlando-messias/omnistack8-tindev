@@ -26,7 +26,7 @@ module.exports = {
 
     const userExists = await Dev.findOne({ user: username });
 
-    if (userExists) return res.json({ message: 'User already exists' });
+    if (userExists) return res.json(userExists);
 
     // find username via github api
     const response = await axios.get(`https://api.github.com/users/${username}`);
