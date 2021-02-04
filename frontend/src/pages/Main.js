@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import io from 'socket.io-client';
 
 import api from '../services/api';
 import logo from '../assets/logo.svg';
 import like from '../assets/like.svg';
 import dislike from '../assets/dislike.svg';
 import './Main.css';
+import itsamatch from '../assets/itsamatch.png';
 
 function Main({ match }) {
   const [users, setUsers] = useState([]);
+  const [matchDev, setMatchDev] = useState(null);
 
   const id = match.params.id;
 
@@ -22,6 +25,18 @@ function Main({ match }) {
     };
 
     loadUsers();
+  }, [id]);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3333", {
+      withCredentials: true,
+      query: { user: id }
+    });
+
+    socket.on('match', dev => {
+      setMatchDev(dev);
+    })
+
   }, [id]);
 
   async function handleLike(id) {
@@ -69,6 +84,16 @@ function Main({ match }) {
       ) : (
           <div className="empty">Não há Devs :(</div>
         )}
+
+      { matchDev && (
+        <div className="match-container">
+          <img src={itsamatch} alt="its a match" />
+          <img className="avatar" src={matchDev.avatar} alt="Avatar" />
+          <strong>{matchDev.name}</strong>
+          <p>{matchDev.bio}</p>
+          <button type="button" onClick={() => setMatchDev(null)}>FECHAR</button>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ module.exports = {
 
   // register a new like
   async create(req, res) {
+    console.log(req.connectedUsers);
     const { user } = req.headers;
     const { devId } = req.params;
 
@@ -13,8 +14,18 @@ module.exports = {
     if (!likedDev) return res.status(400).json({ error: 'Dev not exists' });
 
     // checks if devs match each other
-    if (likedDev.likes.includes(loggedDev._id))
-      console.log('DEU MATCH');
+    if (likedDev.likes.includes(loggedDev._id)) {
+      const loggedSocket = req.connectedUsers[user];
+      const likedSocket = req.connectedUsers[devId];
+
+      if (loggedSocket) {
+        req.io.to(loggedSocket).emit('match', likedDev);
+      }
+
+      if (likedSocket) {
+        req.io.to(likedSocket).emit('match', loggedDev);
+      }
+    }
 
     loggedDev.likes.push(likedDev._id);
 

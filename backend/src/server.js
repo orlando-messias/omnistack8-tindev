@@ -4,7 +4,26 @@ const cors = require('cors');
 
 const routes = require('./routes');
 
-const server = express();
+const app = express();
+const server = require('http').Server(app);
+
+// websocket configuration
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["user"],
+    credentials: true
+  }
+});
+
+const connectedUsers = {};
+
+// websocket connection
+io.on('connection', socket => {
+  const { user } = socket.handshake.query;
+  connectedUsers[user] = socket.id;
+});
 
 // connection to database MongoDB
 mongoose.connect('mongodb://localhost/omnistack8', {
@@ -13,11 +32,17 @@ mongoose.connect('mongodb://localhost/omnistack8', {
   useCreateIndex: true
 });
 
-server.use(cors());
-server.use(express.json());
-server.use(routes);
+app.use((req, res, next) => {
+  req.io = io;
+  req.connectedUsers = connectedUsers;
+  return next();
+});
 
-server.get('/', (req, res) => {
+app.use(cors());
+app.use(express.json());
+app.use(routes);
+
+app.get('/', (req, res) => {
   return res.send('Hello World');
 });
 
